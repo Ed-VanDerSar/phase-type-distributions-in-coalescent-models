@@ -8,7 +8,7 @@ library("expm")
 #' @param rate_matrix the rate matrix.
 #' @return the density function.
 tmrca_density <- function(rate_matrix) {
-  ## Restrict the rate matrix and invert it
+  ## Restrict the rate matrix
   rest_rate <- rate_matrix[1:(ncol(rate_matrix) - 1),
                            1:(ncol(rate_matrix) - 1)]
   id_matrix <- diag(1, (ncol(rate_matrix) - 1))

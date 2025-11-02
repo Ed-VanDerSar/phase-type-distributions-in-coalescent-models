@@ -1,7 +1,9 @@
 library(parallel)
-source("scrpits/phase-type-density-moments.R")
-source("scrpits/nested-coalescent-state-space-rate-matrix.R")
-source("scrpits/structured-coalescent-state-space-rate-matrix")
+library(here)
+
+source(here("scripts/nested-coalescent-state-space-rate-matrix.R"))
+source(here("scripts/structured-coalescent-state-space-rate-matrix.R"))
+source(here("scripts/phase-type-density-and-moments.R"))
 
 plot_tmrca_density <- function(rate_matrix, limit_interval) {
   f <- tmrca_density(rate_matrix)
