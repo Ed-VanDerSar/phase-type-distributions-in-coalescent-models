@@ -1,5 +1,5 @@
 ---
-title: "Probability density funtions of TMRCA in some coalescent models"
+title: "Probability density funtions of TMRCA for some coalescent models"
 author: "Edwin Anzures"
 output: 
   html_document:
