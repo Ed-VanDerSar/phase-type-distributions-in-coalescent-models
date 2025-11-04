@@ -4,6 +4,7 @@ library(here)
 source(here("scripts/nested-coalescent-state-space-rate-matrix.R"))
 source(here("scripts/structured-coalescent-state-space-rate-matrix.R"))
 source(here("scripts/phase-type-density-and-moments.R"))
+source(here("scripts/basic-kingman-model-rate-matrix.R"))
 
 plot_tmrca_density <- function(rate_matrix, limit_interval) {
   f <- tmrca_density(rate_matrix)
@@ -61,3 +62,33 @@ plot_nested_kingman_tmrca_1st_2nd_moments <- function() {
   legend("topleft", legend = c("Moment 1", "Moment 2"),
          col = c("blue", "red"), lwd = 2)
 }
+
+
+kingman_vs_nested_kingman_vs_island_model <- function(n, limit_interval) {
+  rate_islands <- two_islands_rate_matrix(n, n, 1, 1, 1, 1)
+  rate_nested <- nested_rate_matrix(n, 2)
+  rate_kingman <- RateMatandStateSpace((n * 2), 1.9999)
+  f_1 <- tmrca_density(rate_islands)
+  f_2 <- tmrca_density(rate_nested)
+  f_3 <- tmrca_density(rate_kingman)
+  x_vals <- seq(0, limit_interval, length.out = 250)
+  
+  # Compute in parallel
+  y_vals1 <- unlist(mclapply(x_vals, f_1, mc.cores = detectCores() - 1))
+  y_vals2 <- unlist(mclapply(x_vals, f_2, mc.cores = detectCores() - 1))
+  y_vals3 <- unlist(mclapply(x_vals, f_3, mc.cores = detectCores() - 1))
+  
+  plot(x_vals, y_vals1, type = "l", col = "darkred", lwd = 2,
+       xlab = "time", ylab = "density", 
+       main = "TMRCA probability density",
+       ylim = range(c(y_vals1, y_vals2, y_vals3 )))
+  
+  lines(x_vals, y_vals2, col = "darkblue", lwd = 2)
+  lines(x_vals, y_vals3, col = "darkgreen", lwd = 2)
+  
+  legend("topright", 
+         legend = c("Structured population", "Nested Kingman", "Kingman"),
+         col = c("darkred", "darkblue", "darkgreen"), 
+         lwd = 2)  
+}
+

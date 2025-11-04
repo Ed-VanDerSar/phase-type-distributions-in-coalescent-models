@@ -11,7 +11,7 @@ source(here("scripts/phase-type-density-and-moments.R"))
 island_rate_matrices_exponential_demographics <- function() {
   h_values <- c(1, 1/2, 1/4, 1/8, 1/16)
   matrices <- lapply(h_values, function(h) {
-    two_islands_rate_matrix(15,15, h, h, 1, 1)
+    two_islands_rate_matrix(10,10, h, h, 1, 1)
   })
   return(matrices)
 }
@@ -20,7 +20,7 @@ island_rate_matrices_exponential_demographics <- function() {
 non_equilibrium_islands_density <- function() {
   epochs_time_boundaries <- c(4,8,12,16) # We change epoch each four generations.
   rate_matrices <- island_rate_matrices_exponential_demographics()
-  initial_probability_vector <- diag(1, (nrow(two_islands_state_space(15,15))-2))[1, ] #Starts in the first state. 
+  initial_probability_vector <- diag(1, (nrow(two_islands_state_space(10,10))-2))[1, ] #Starts in the first state. 
   function(x) {
     non_equilibrium_density(x,
                             rate_matrices,
@@ -31,7 +31,7 @@ non_equilibrium_islands_density <- function() {
 
 #The density for the model in equilibrium 
 equilibrium_islands_density <- function() {
-  rate_matrix <- two_islands_rate_matrix(15,15, 1/16, 1/16, 1, 1)
+  rate_matrix <- two_islands_rate_matrix(10,10, 1/2, 1/2, 1, 1)
   tmrca_density(rate_matrix)
 }
 
