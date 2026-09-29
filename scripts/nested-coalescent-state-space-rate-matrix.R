@@ -93,7 +93,7 @@ nested_rate_matrix <- function(n, b) {
       ## Disappearing blocks
       w2 <- ifelse(c < 0, 1, 0)
       neg_merged_species <- -c * w2
-      ##Fullfilling the rate matrix
+      ##Fulfilling the rate matrix
       if (gene_mass == 0 && sum(c) == -1) {
         provrate <- 1
         for (k in 1:total_gene_sample){
