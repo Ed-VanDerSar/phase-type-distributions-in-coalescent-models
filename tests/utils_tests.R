@@ -1,7 +1,8 @@
 library(partitions)
 
-#' Given integers n and b, returns the carnality of the sate space
-#' of the nested Kingman model starting with b species with n genes each.
+#' Given integers n and b, returns the size of the sate space
+#' associated to the nested Kingman starting with b species with
+#'n genes each.
 #'
 #' @param n the size of the initial gene sample.
 #' @param b the size of the initial species sample.
