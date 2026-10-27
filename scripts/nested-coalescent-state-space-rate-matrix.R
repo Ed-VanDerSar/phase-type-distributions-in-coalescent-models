@@ -9,11 +9,10 @@ all_possible_integer_partitions <- function(n) {
   if (n == 1) {
     return(matrix(1, nrow = 1, ncol = 1))
   }
-  
   # parts() returns a matrix where each column is a partition
   x <- partitions::parts(n)
   
-  # Tabulate counts occurrences of integers 1 to n natively (Huge speedup)
+  # Tabulate counts occurrences of integers 1 to n natively
   # We apply it to each column, then transpose to match original row structure
   r_matrix <- t(apply(x, 2, function(y) tabulate(y, nbins = n)))
   
@@ -23,8 +22,8 @@ all_possible_integer_partitions <- function(n) {
   r_matrix[order(r_matrix[, 1], decreasing = TRUE), , drop = FALSE]
 }
 
-#' Given integers n and b, return a matrix encoding all possible truncated states
-#' of the nested Kingman model.
+#' Given integers n and b, return a matrix encoding all possible 
+#' states of the nested Kingman model.
 #'
 #' @param n the size of the initial gene sample in each species.
 #' @param b the size of the initial species sample.
@@ -52,7 +51,6 @@ nested_state_space <- function(n, b) {
   )
   valid_states_list[[max_val]] <- reordered_initial_states
   
-  # Bind everything efficiently and reverse row order
   valid_states <- do.call(rbind, valid_states_list)
   valid_states[nrow(valid_states):1, , drop = FALSE]
 }
@@ -72,8 +70,7 @@ nested_rate_matrix <- function(n, b) {
   
   for (i in seq_len(dim_e)) {
     for (j in seq_len(dim_e)) {
-      if (i == j) next # Skip diagonals for now
-      
+      if (i == j) next 
       # Difference between two states
       state_diff <- e[i, ] - e[j, ]
       gene_mass <- sum(state_diff * gene_index)
@@ -82,7 +79,6 @@ nested_rate_matrix <- function(n, b) {
       if (gene_mass == 0 && sum_diff == -1) {
         # SPECIES MERGING EVENT
         neg_merged_species <- ifelse(state_diff < 0, -state_diff, 0)
-        # Vectorized replacement for the inner loop
         rate[j, i] <- prod(choose(e[j, ], neg_merged_species))
         
       } else if (gene_mass == -1 && sum_diff == 0) {
@@ -94,7 +90,7 @@ nested_rate_matrix <- function(n, b) {
     }
   }
   
-  # Fill the diagonal efficiently
+  # Fill the diagonal
   diag(rate) <- -rowSums(rate)
   
   rate
