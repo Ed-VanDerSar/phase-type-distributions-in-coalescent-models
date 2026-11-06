@@ -1,6 +1,7 @@
 library(partitions)
 
-#' Given an integer n, returns all possible arithmetic partitions of n
+#' Given an integer n, returns a matrix whose rows are all the possible 
+#' arithmetic partitions of an integer n
 #' in a vector representation of the Young diagram.
 #'
 #' @param n the size of the initial sample.
@@ -9,14 +10,14 @@ all_possible_integer_partitions <- function(n) {
   if (n == 1) {
     return(matrix(1, nrow = 1, ncol = 1))
   }
-  # parts() returns a matrix where each column is a partition
-  x <- partitions::parts(n)
+  # Matrix where each column is a partition of [n]
+  x <- parts(n)
   
-  # Tabulate counts occurrences of integers 1 to n natively
+  # Tabulate counts occurrences of integers 1 to n 
   # We apply it to each column, then transpose to match original row structure
   r_matrix <- t(apply(x, 2, function(y) tabulate(y, nbins = n)))
   
-  # Reverse row order to match your original right-to-left processing,
+  # Reverse row order to match right-to-left,
   # then reorder by the first column decreasingly
   r_matrix <- r_matrix[nrow(r_matrix):1, , drop = FALSE]
   r_matrix[order(r_matrix[, 1], decreasing = TRUE), , drop = FALSE]
