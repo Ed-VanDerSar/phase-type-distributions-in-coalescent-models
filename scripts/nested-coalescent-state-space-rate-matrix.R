@@ -1,8 +1,8 @@
 library(partitions)
 
 #' Given an integer n, returns a matrix whose rows are all the possible 
-#' arithmetic partitions of an integer n
-#' in a vector representation of the Young diagram.
+#' arithmetic partitions of an integer n in a vector representation 
+#' of the Young diagram.
 #'
 #' @param n the size of the initial sample.
 #' @return all the possible partitions
@@ -20,8 +20,9 @@ all_possible_integer_partitions <- function(n) {
   r_matrix[order(r_matrix[, 1], decreasing = TRUE), , drop = FALSE]
 }
 
-#' Given integers n and b, return a matrix encoding all possible 
-#' distributions of species/genes: 
+#' Given integers n and b, return a matrix whose rows encode all possible 
+#' distributions of species/genes: The i-th coefficient of a row represents 
+#' the number of observed species with i gene lineages.
 #'
 #' @param n the size of the initial gene sample in each species.
 #' @param b the size of the initial species sample.
@@ -53,7 +54,8 @@ nested_state_space <- function(n, b) {
   valid_states[nrow(valid_states):1, , drop = FALSE]
 }
 
-#' Populates the rate matrix for the state space associated to the nested coalescent model.
+#' Populates the rate matrix for the state space all possible 
+#' distributions of species/genes in the nested Kigman coalescent.
 #'
 #' @param n the size of the initial gene sample in each species.
 #' @param b the size of the initial species sample.
