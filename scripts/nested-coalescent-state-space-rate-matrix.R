@@ -12,11 +12,8 @@ all_possible_integer_partitions <- function(n) {
   }
   # Matrix where each column is a partition of [n]
   x <- parts(n)
-  
   # Tabulate counts occurrences of integers 1 to n 
-  # We apply it to each column, then transpose to match original row structure
   r_matrix <- t(apply(x, 2, function(y) tabulate(y, nbins = n)))
-  
   # Reverse row order to match right-to-left,
   # then reorder by the first column decreasingly
   r_matrix <- r_matrix[nrow(r_matrix):1, , drop = FALSE]
@@ -24,7 +21,7 @@ all_possible_integer_partitions <- function(n) {
 }
 
 #' Given integers n and b, return a matrix encoding all possible 
-#' states of the nested Kingman model.
+#' distributions of species/genes: 
 #'
 #' @param n the size of the initial gene sample in each species.
 #' @param b the size of the initial species sample.
@@ -85,7 +82,6 @@ nested_rate_matrix <- function(n, b) {
       } else if (gene_mass == -1 && sum_diff == 0) {
         # GENE MERGING EVENT
         w2 <- ifelse(state_diff < 0, 1, 0)
-        # Vectorized replacement for the inner loop
         rate[j, i] <- sum(choose(gene_index * w2, 2))
       }
     }
