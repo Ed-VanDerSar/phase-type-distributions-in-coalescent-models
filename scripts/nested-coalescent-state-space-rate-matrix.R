@@ -1,7 +1,7 @@
 library(partitions)
 
 #' Given an integer n, returns a matrix whose rows are all the possible 
-#' arithmetic partitions of an integer n in a vector representation 
+#' arithmetic partitions [n] in a vector representation 
 #' of the Young diagram.
 #'
 #' @param n the size of the initial sample.
@@ -20,15 +20,16 @@ all_possible_integer_partitions <- function(n) {
   r_matrix[order(r_matrix[, 1], decreasing = TRUE), , drop = FALSE]
 }
 
-#' Given integers n and b, return a matrix whose rows encode all possible 
-#' distributions of species/genes: The i-th coefficient of a row represents 
+#' Given integers l and s, return a matrix whose rows encode all possible 
+#' distributions of species/genes of an starting sample of s species with l 
+#' gene lineages each: The i-th coefficient of a row represents 
 #' the number of observed species with i gene lineages.
 #'
-#' @param n the size of the initial gene sample in each species.
-#' @param b the size of the initial species sample.
+#' @param l the size of the initial gene sample in each species.
+#' @param s the size of the initial species sample.
 #' @return the state space.
-nested_state_space <- function(n, b) {
-  max_val <- n * b
+nested_state_space <- function(l, s) {
+  max_val <- l * s
   valid_states_list <- vector("list", max_val)
   
   # Process states with total gene mass less than n*b
@@ -40,8 +41,8 @@ nested_state_space <- function(n, b) {
   
   initial_states <- all_possible_integer_partitions(max_val)
   
-  # Find the index of the row with the maximum value in column n
-  max_index <- which.max(initial_states[, n])
+  # Find the index of the row with the maximum value in column l
+  max_index <- which.max(initial_states[, l])
   
   # Reorder matrix
   reordered_initial_states <- rbind(
@@ -55,13 +56,14 @@ nested_state_space <- function(n, b) {
 }
 
 #' Populates the rate matrix for the state space all possible 
-#' distributions of species/genes in the nested Kigman coalescent.
+#' distributions of species/genes of an starting sample of s species with l 
+#' gene lineages each: in the nested Kigman coalescent.
 #'
-#' @param n the size of the initial gene sample in each species.
-#' @param b the size of the initial species sample.
+#' @param l the size of the initial gene sample in each species.
+#' @param s the size of the initial species sample.
 #' @return the rate matrix.
-nested_rate_matrix <- function(n, b) {
-  e <- nested_state_space(n, b)
+nested_rate_matrix <- function(l, s) {
+  e <- nested_state_space(l, s)
   dim_e <- nrow(e)
   total_gene_sample <- ncol(e)
   
