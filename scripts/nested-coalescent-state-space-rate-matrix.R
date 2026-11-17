@@ -29,19 +29,19 @@ all_possible_integer_partitions <- function(n) {
 #' @param s the size of the initial species sample.
 #' @return the state space.
 nested_state_space <- function(l, s) {
-  max_val <- l * s
-  valid_states_list <- vector("list", max_val)
+  max_lineage_value <- l * s
+  valid_states_list <- vector("list", max_lineage_value)
   
   # Process states with total gene mass less than n*b
-  for (k in seq_len(max_val - 1)) {
+  for (k in seq_len(max_lineage_value - 1)) {
     truncated_states <- all_possible_integer_partitions(k)
-    zero_cols <- matrix(0, nrow = nrow(truncated_states), ncol = max_val - k)
+    zero_cols <- matrix(0, nrow = nrow(truncated_states), ncol = max_lineage_value - k)
     valid_states_list[[k]] <- cbind(truncated_states, zero_cols)
   }
   
-  initial_states <- all_possible_integer_partitions(max_val)
+  initial_states <- all_possible_integer_partitions(max_lineage_value)
   
-  # Find the index of the row with the maximum value in column l
+  # Find the index of the row with the maximum value in column i
   max_index <- which.max(initial_states[, l])
   
   # Reorder matrix
@@ -49,7 +49,7 @@ nested_state_space <- function(l, s) {
     initial_states[-max_index, , drop = FALSE],
     initial_states[max_index, , drop = FALSE]
   )
-  valid_states_list[[max_val]] <- reordered_initial_states
+  valid_states_list[[max_lineage_value]] <- reordered_initial_states
   
   valid_states <- do.call(rbind, valid_states_list)
   valid_states[nrow(valid_states):1, , drop = FALSE]
