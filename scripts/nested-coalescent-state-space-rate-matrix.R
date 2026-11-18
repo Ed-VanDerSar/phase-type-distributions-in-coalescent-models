@@ -85,8 +85,8 @@ nested_rate_matrix <- function(l, s) {
         
       } else if (gene_mass == -1 && sum_diff == 0) {
         # GENE MERGING EVENT
-        w2 <- ifelse(state_diff < 0, 1, 0)
-        rate[j, i] <- sum(choose(gene_index * w2, 2))
+        disappearing_blocks <- ifelse(state_diff < 0, 1, 0)
+        rate[j, i] <- sum(choose(gene_index * disappearing_blocks, 2))
       }
     }
   }
