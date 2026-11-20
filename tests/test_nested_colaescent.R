@@ -69,7 +69,7 @@ test_that("nested_rate_matrix works correctly", {
   diag(diag_removed) <- 0
   expect_true(all(diag_removed >= -1e-10))  # Allow for floating point error
   
-  # Test specific known case: n=2, b=1
+  # Test specific known case: l=2,s=1
   # States should be: [0,1] (one species with 2 genes) and [2,0] (two species with 1 gene each)
   # Only one transition possible: from [2,0] to [0,1] via gene coalescence
   rate_matrix_2_1 <- nested_rate_matrix(2, 1)
