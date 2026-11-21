@@ -4,7 +4,7 @@ library(here)
 
 source(here("scripts", "nested-coalescent-state-space-rate-matrix.R"))
 
-test_that("all_possible_integer_partitions works correctly", {
+test_that("all_possible_integer_partitions return actual integer partitions", {
   # Test basic functionality
   expect_silent(result <- all_possible_integer_partitions(4))
   expect_type(result, "integer")
@@ -21,7 +21,13 @@ test_that("all_possible_integer_partitions works correctly", {
   
   # Check that all expected partitions are present (order may vary)
   expect_equal(nrow(result), nrow(expected))
-  expect_equal(result %*% (1:4), matrix(rep(ncol(result), nrow(result)), ncol = 1))  # Each partition sums to 4
+  setequal(
+    lapply(seq_len(nrow(result)), function(i) result[i, ]),
+    lapply(seq_len(nrow(expected)), function(i) expected[i, ])
+  )
+  
+  # Each partition sums to 4
+  expect_equal(result %*% (1:4), matrix(rep(ncol(result), nrow(result)), ncol = 1))  
   
   
   # Test n=1
@@ -30,7 +36,7 @@ test_that("all_possible_integer_partitions works correctly", {
   expect_equal(result1[1, 1], 1)
 })
 
-test_that("nested_state_space_mapper works correctly", {
+test_that("nested_state_space_mapper returns expected stag", {
   # Test basic functionality
   expect_silent(states <- nested_state_space(2, 2))
   
