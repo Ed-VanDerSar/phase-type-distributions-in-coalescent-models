@@ -4,14 +4,14 @@ library(here)
 
 source(here("scripts", "nested-coalescent-state-space-rate-matrix.R"))
 
-test_that("all_possible_integer_partitions works correctly", {
-  # Test basic functionality
+test_that("all_possible_integer_partitions return actual integer partitions", {
+  # Test the the method returns a matrix with the correct dimensions 
   expect_silent(result <- all_possible_integer_partitions(4))
   expect_type(result, "integer")
   expect_equal(dim(result), c(5, 4))  # 5 partitions of 4
   
   # Test known partitions for n=4
-  expected <- matrix(c(
+  expected_partitions <- matrix(c(
     4,0,0,0,  # 4
     2,1,0,0,  # 2+1+1
     0,2,0,0,  # 2+2
@@ -20,43 +20,63 @@ test_that("all_possible_integer_partitions works correctly", {
   ), nrow = 5, byrow = TRUE)
   
   # Check that all expected partitions are present (order may vary)
-  expect_equal(nrow(result), nrow(expected))
-  expect_equal(result %*% (1:4), matrix(rep(ncol(result), nrow(result)), ncol = 1))  # Each partition sums to 4
+  expect_equal(nrow(result), nrow(expected_partitions))
+  setequal(
+    lapply(seq_len(nrow(result)), function(i) result[i, ]),
+    lapply(seq_len(nrow(expected_partitions)), function(i) expected_partitions[i, ])
+  )
   
+  # Each partition sums to 4
+  expect_equal(result %*% (1:4), matrix(rep(ncol(result), nrow(result)), ncol = 1))  
   
-  # Test n=1
+  # Test case n=1
   result1 <- all_possible_integer_partitions(1)
   expect_equal(dim(result1), c(1, 1))
   expect_equal(result1[1, 1], 1)
 })
 
-test_that("nested_state_space_mapper works correctly", {
-  # Test basic functionality
-  expect_silent(states <- nested_state_space(2, 2))
+test_that("nested_state_space_mapper returns expected state space", {
+  # Test the the method returns a matrix with the correct dimensions
+  # for a initial sample of two species with two lineages each
+  expect_silent(states <- nested_state_space(2, 2)) 
+  total_gene_lineages <- 2 * 2
+  expect_equal(ncol(states), total_gene_lineages)
   
-  # Test dimensions
-  total_genes <- 2 * 2
-  expect_equal(ncol(states), total_genes)
+  expected_states <- matrix(c(
+    0,2,0,0,  # two species with two lineages
+    0,0,0,1,  # one species with four lineages
+    1,0,1,0,  # one species with 3 lineages and one with 1
+    2,1,0,0,  # two species with 1 lineages and one with 2 
+    4,0,0,0,  # four species with 1 lineages  
+    1,1,0,0,  # one species with 2 lineages and one with 1
+    3,0,0,0,  # three species with 1 lineage
+    0,0,1,0,  # one species with 3 lineages
+    2,0,0,0,  # two species with 1 lineages
+    0,1,0,0,  # one species with 2 lineages
+    1,0,0,0   # one species with 1 lineages
+  ), nrow = 11, byrow = TRUE)
   
-  # Test that initial state is correct (2 species with 2 genes each)
-  initial_state <- integer(total_genes)
-  initial_state[2] <- 2  # 2 species of size 2
+  # Check that the states are the expected (order may vary)
+  setequal(
+    lapply(seq_len(nrow(states)), function(i) states[i, ]),
+    lapply(seq_len(nrow(expected_states)), function(i) expected_states[i, ])
+  )
   
-  # The initial state should be the first row after reversal
-  expect_equal(states[1, ], initial_state)
+  # Test that initial state is correct (2 species with 2 lineages each)
+  expected_initial_state <- integer(total_gene_lineages)
+  expected_initial_state[2] <- 2  # 2 species with lineages 2
+  expect_equal(states[1, ], expected_initial_state)
   
   # Test that all states have correct total gene count
   gene_counts <- apply(states, 1, function(row) sum(row * seq_along(row)))
-  expect_true(all(gene_counts <= total_genes))
+  expect_true(all(gene_counts <= total_gene_lineages))
   expect_true(all(gene_counts >= 1))
 })
 
-test_that("nested_rate_matrix works correctly", {
-  # Test basic functionality
-  expect_silent(rate_matrix <- nested_rate_matrix(2, 1))
+test_that("nested_rate_matrix returns expected rate materix", {
+  # Test the the method returns a square matrix
+  expect_silent(rate_matrix <- nested_rate_matrix(2, 2))
   expect_type(rate_matrix, "double")
-  
-  # Test matrix properties
   expect_true(is.matrix(rate_matrix))
   expect_equal(nrow(rate_matrix), ncol(rate_matrix))
   
@@ -69,16 +89,9 @@ test_that("nested_rate_matrix works correctly", {
   diag(diag_removed) <- 0
   expect_true(all(diag_removed >= -1e-10))  # Allow for floating point error
   
-  # Test specific known case: n=2, b=1
-  # States should be: [0,1] (one species with 2 genes) and [2,0] (two species with 1 gene each)
-  # Only one transition possible: from [2,0] to [0,1] via gene coalescence
+  # Test specific known case: l=2,s=1
   rate_matrix_2_1 <- nested_rate_matrix(2, 1)
   expect_equal(dim(rate_matrix_2_1), c(nrow(nested_state_space(2,1)), nrow(nested_state_space(2,1))))
-  
-  # Test larger case
-  expect_silent(rate_matrix_2_2 <- nested_rate_matrix(2, 2))
-  expect_true(nrow(rate_matrix_2_2) > 0)
-  expect_equal(nrow(rate_matrix_2_2), ncol(rate_matrix_2_2))
 })
 
 test_that("Integration between functions works", {

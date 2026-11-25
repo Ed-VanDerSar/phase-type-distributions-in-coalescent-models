@@ -1,7 +1,7 @@
 library(partitions)
 
 #' Given an integer n, returns a matrix whose rows are all the possible 
-#' arithmetic partitions [n] in a vector representation 
+#' arithmetic partitions in a vector representation 
 #' of the Young diagram.
 #'
 #' @param n the size of the initial sample.
