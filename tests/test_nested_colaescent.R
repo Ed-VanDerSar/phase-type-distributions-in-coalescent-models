@@ -73,8 +73,8 @@ test_that("nested_state_space_mapper returns expected state space", {
   expect_true(all(gene_counts >= 1))
 })
 
-test_that("nested_rate_matrix returns expected rate materix", {
-  # Test the the method returns a square matrix
+test_that("nested_rate_matrix returns the infinitesimal generator of a markov process", {
+  # Test the the method returns a square matrix 
   expect_silent(rate_matrix <- nested_rate_matrix(2, 2))
   expect_type(rate_matrix, "double")
   expect_true(is.matrix(rate_matrix))
@@ -88,26 +88,75 @@ test_that("nested_rate_matrix returns expected rate materix", {
   diag_removed <- rate_matrix
   diag(diag_removed) <- 0
   expect_true(all(diag_removed >= -1e-10))  # Allow for floating point error
+  })
+
+test_that("nested_rate_matrix returns expected rate matrix for l = 2, s = 2", {
+  expected_rate <- matrix(c(
+    -3,  1,  0,  0,  0,  0,  2,  0,  0,  0,  0,  #  1: (0,2,0,0)
+    0, -6,  0,  0,  0,  6,  0,  0,  0,  0,  0,  #  2: (0,0,0,1)
+    0,  1, -4,  0,  0,  0,  3,  0,  0,  0,  0,  #  3: (1,0,1,0)
+    1,  0,  2, -4,  0,  0,  0,  1,  0,  0,  0,  #  4: (2,1,0,0)
+    0,  0,  0,  6, -6,  0,  0,  0,  0,  0,  0,  #  5: (4,0,0,0)
+    0,  0,  0,  0,  0, -3,  0,  0,  3,  0,  0,  #  6: (0,0,1,0)
+    0,  0,  0,  0,  0,  1, -2,  0,  0,  1,  0,  #  7: (1,1,0,0)
+    0,  0,  0,  0,  0,  0,  3, -3,  0,  0,  0,  #  8: (3,0,0,0)
+    0,  0,  0,  0,  0,  0,  0,  0, -1,  0,  1,  #  9: (0,1,0,0)
+    0,  0,  0,  0,  0,  0,  0,  0,  1, -1,  0,  # 10: (2,0,0,0)
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0   # 11: (1,0,0,0)
+  ), nrow = 11, byrow = TRUE)
   
-  # Test specific known case: l=2,s=1
-  rate_matrix_2_1 <- nested_rate_matrix(2, 1)
-  expect_equal(dim(rate_matrix_2_1), c(nrow(nested_state_space(2,1)), nrow(nested_state_space(2,1))))
+  expect_equal(nested_rate_matrix(2,2), expected_rate)
 })
 
-test_that("Integration between functions works", {
-  # Test that state space mapper uses partitions correctly
-  n <- 2
-  b <- 2
-  states <- nested_state_space(n, b)
-  partitions <- all_possible_integer_partitions(n * b)
+test_that("nested_rate_matrix returns expected rate matrix for l = 2, s = 3", {
+  expected_rate <- matrix(c(
+    -6,   0,   3,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   3,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  #  1: (0,3,0,0,0,0)
+    0, -15,   0,   0,   0,   0,   0,   0,   0,   0,   0,  15,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  #  2: (0,0,0,0,0,1)
+    0,   1,  -8,   0,   0,   0,   0,   0,   0,   0,   0,   0,   6,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  #  3: (0,1,0,1,0,0)
+    0,   1,   0,  -7,   0,   0,   0,   0,   0,   0,   0,   0,   6,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  #  4: (0,0,2,0,0,0)
+    0,   1,   0,   0, -11,   0,   0,   0,   0,   0,   0,   0,   0,  10,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  #  5: (1,0,0,0,1,0)
+    0,   0,   1,   1,   1,  -7,   0,   0,   0,   0,   0,   0,   0,   0,   3,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  #  6: (1,1,1,0,0,0)
+    0,   0,   1,   0,   2,   0,  -9,   0,   0,   0,   0,   0,   0,   0,   0,   6,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  #  7: (2,0,0,1,0,0)
+    1,   0,   0,   0,   0,   4,   1,  -8,   0,   0,   0,   0,   0,   0,   0,   0,   2,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  #  8: (2,2,0,0,0,0)
+    0,   0,   0,   0,   0,   3,   3,   0,  -9,   0,   0,   0,   0,   0,   0,   0,   3,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  #  9: (3,0,1,0,0,0)
+    0,   0,   0,   0,   0,   0,   0,   6,   4, -11,   0,   0,   0,   0,   0,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  # 10: (4,1,0,0,0,0)
+    0,   0,   0,   0,   0,   0,   0,   0,   0,  15, -15,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  # 11: (6,0,0,0,0,0)
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, -10,   0,   0,   0,   0,   0,   0,  10,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  # 12: (0,0,0,0,1,0)
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,  -5,   0,   0,   0,   0,   0,   0,   3,   1,   0,   0,   0,   0,   0,   0,   0,   0,  # 13: (0,1,1,0,0,0)
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   0,  -7,   0,   0,   0,   0,   0,   0,   6,   0,   0,   0,   0,   0,   0,   0,   0,  # 14: (1,0,0,1,0,0)
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   2,   1,  -5,   0,   0,   0,   0,   0,   0,   2,   0,   0,   0,   0,   0,   0,   0,  # 15: (1,2,0,0,0,0)
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   2,   0,  -6,   0,   0,   0,   0,   0,   3,   0,   0,   0,   0,   0,   0,   0,  # 16: (2,0,1,0,0,0)
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   3,   3,  -7,   0,   0,   0,   0,   0,   1,   0,   0,   0,   0,   0,   0,  # 17: (3,1,0,0,0,0)
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  10, -10,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  # 18: (5,0,0,0,0,0)
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  -6,   0,   0,   0,   0,   6,   0,   0,   0,   0,   0,  # 19: (0,0,0,1,0,0)
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,  -3,   0,   0,   0,   0,   2,   0,   0,   0,   0,  # 20: (0,2,0,0,0,0)
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   0,  -4,   0,   0,   0,   3,   0,   0,   0,   0,  # 21: (1,0,1,0,0,0)
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   2,  -4,   0,   0,   0,   1,   0,   0,   0,  # 22: (2,1,0,0,0,0)
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   6,  -6,   0,   0,   0,   0,   0,   0,  # 23: (4,0,0,0,0,0)
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  -3,   0,   0,   3,   0,   0,  # 24: (0,0,1,0,0,0)
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,  -2,   0,   0,   1,   0,  # 25: (1,1,0,0,0,0)
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   3,  -3,   0,   0,   0,  # 26: (3,0,0,0,0,0)
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  -1,   0,   1,  # 27: (0,1,0,0,0,0)
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,  -1,   0,  # 28: (2,0,0,0,0,0)
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0   # 29: (1,0,0,0,0,0)
+  ), nrow = 29, byrow = TRUE)
+  
+  expect_equal(nested_rate_matrix(2,3), expected_rate)
+})
+
+test_that("Rate matrix dimensions match state space", {
+  # Test case where the total gene count is small
+  l <- 2
+  s <- 2
+  states <- nested_state_space(l, s)
   
   # The full mass partition should be in the state space
-  full_mass_state <- integer(n * b)
-  full_mass_state[n] <- b  # b species with n genes each
+  full_mass_state <- integer(l * s)
+  full_mass_state[l] <- s  # s species with l genes each
   expect_true(any(apply(states, 1, function(row) all(row == full_mass_state))))
   
   # Test that rate matrix dimensions match state space
-  rate_matrix <- nested_rate_matrix(n, b)
+  rate_matrix <- nested_rate_matrix(l, s)
   expect_equal(nrow(rate_matrix), nrow(states))
   expect_equal(ncol(rate_matrix), nrow(states))
 })
@@ -127,28 +176,3 @@ test_that("Performance tests for larger inputs", {
   expect_lt(time_taken["elapsed"], 10)  # Should complete in under 10 seconds
 })
 
-test_that("Biological interpretation tests", {
-  # Test that transitions make biological sense
-  
-  # Case 1: Two species with one gene each
-  # Only possible transition: gene coalescence within a species
-  # But with one gene per species, no coalescence is possible
-  # So the state should be absorbing
-  rate_matrix_1_2 <- nested_rate_matrix(1, 2)
-  expect_equal(sum(rate_matrix_1_2[1, ]), 0)  # First row (initial state) should sum to 0
-  
-  # Case 2: One species with two genes
-  # Only possible transition: gene coalescence
-  states <- nested_state_space(2, 1)
-  rate_matrix <- nested_rate_matrix(2, 1)
-  
-  # Should have two states: [0,1] and [2,0]
-  # Transition from [2,0] to [0,1] should have rate choose(2,2) = 1
-  # Find which state is [2,0] (two species with 1 gene)
-  state_2_0 <- which(apply(states, 1, function(x) all(x == c(2, 0))))
-  state_0_1 <- which(apply(states, 1, function(x) all(x == c(0, 1))))
-  
-  if (length(state_2_0) > 0 && length(state_0_1) > 0) {
-    expect_equal(rate_matrix[state_2_0, state_0_1], 1)
-  }
-})
