@@ -63,30 +63,31 @@ nested_state_space <- function(l, s) {
 #' @param s the size of the initial species sample.
 #' @return the rate matrix.
 nested_rate_matrix <- function(l, s) {
-  e <- nested_state_space(l, s)
-  dim_e <- nrow(e)
-  total_gene_sample <- ncol(e)
+  states <- nested_state_space(l, s)
+  total_number_of_states <- nrow(states)
+  total_gene_sample <- ncol(states)
   
-  rate <- matrix(0, ncol = dim_e, nrow = dim_e)
+  rate <- matrix(0, ncol = total_number_of_states, nrow = total_number_of_states)
   gene_index <- seq_len(total_gene_sample)
   
-  for (i in seq_len(dim_e)) {
-    for (j in seq_len(dim_e)) {
+  for (i in seq_len(total_number_of_states)) {
+    for (j in seq_len(total_number_of_states)) {
       if (i == j) next 
       # Difference between two states
-      state_diff <- e[i, ] - e[j, ]
-      gene_mass <- sum(state_diff * gene_index)
-      sum_diff <- sum(state_diff)
+      states_difference <- states[i, ] - states[j, ]
+      gene_mass <- sum(states_difference * gene_index)
+      created_species <- sum(states_difference[states_difference > 0])
+      loss_species <- sum(states_difference[states_difference < 0])  
       
-      if (gene_mass == 0 && sum_diff == -1) {
+      if (gene_mass == 0 && created_species == 1 && loss_species == -2) {
         # SPECIES MERGING EVENT
-        neg_merged_species <- ifelse(state_diff < 0, -state_diff, 0)
-        rate[j, i] <- prod(choose(e[j, ], neg_merged_species))
+        merged_species <- ifelse(states_difference < 0, -states_difference, 0)
+        rate[j, i] <- prod(choose(states[j, ], merged_species))
         
-      } else if (gene_mass == -1 && sum_diff == 0) {
+      } else if (gene_mass == -1 && created_species == 1 && loss_species == -1) {
         # GENE MERGING EVENT
-        disappearing_blocks <- ifelse(state_diff < 0, 1, 0)
-        rate[j, i] <- sum(choose(gene_index * disappearing_blocks, 2))
+        species_with_disappearing_blocks <- ifelse(states_difference < 0, 1, 0)
+        rate[j, i] <- sum(states[j, ] * choose(gene_index * species_with_disappearing_blocks, 2))
       }
     }
   }
